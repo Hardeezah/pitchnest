@@ -1,8 +1,9 @@
 import SearchForm from "@/components/SearchForm";
 import StartupCard, { StartupTypeCard } from "@/components/StartupCard";
-import { STARTUPS_QUERY } from "@/sanity/lib/queries";
+import { PLAYLIST_BY_SLUG_QUERY, STARTUPS_QUERY } from "@/sanity/lib/queries";
 import { sanityFetch, SanityLive } from "@/sanity/lib/live";
 import { auth } from "@/auth";
+import { client } from "@/sanity/lib/client";
 
 export default async function Home({
   searchParams,
@@ -17,6 +18,9 @@ export default async function Home({
   console.log(session?.id);
 
   const { data: posts } = await sanityFetch({ query: STARTUPS_QUERY, params });
+  const  { select: editorPosts}  = await client.fetch(PLAYLIST_BY_SLUG_QUERY, {
+      slug: "editor-picks",
+    })
 
   return (
     <>
@@ -33,6 +37,18 @@ export default async function Home({
 
         <SearchForm query={query} />
       </section>
+      {!query && editorPosts?.length > 0 && (
+          <div className="mx-auto max-w-7xl mt-10">
+            <p className="text-30-semibold">Featured Posts</p>
+
+            <ul className="mt-7 card_grid">
+              {editorPosts.map((post: StartupTypeCard, index: number) => (
+                <StartupCard key={index} post={post} />
+              ))}
+            </ul>
+          </div>
+        )}
+
 
       <section className="section_container">
         <p className="text-30-semibold">
